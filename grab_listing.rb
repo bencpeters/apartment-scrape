@@ -10,12 +10,24 @@ if page = RestClient.get(url)
 
   description = npage.css('#postingbody')
 
+  # Grab thumbs/images
+  image_links = npage.css('#thumbs a')
+  image_names = Array.new
+  image_links.each do |link|
+    image = RestClient.get(link['href'])
+    filename = "img-#{link['href'].match(/[^\/]*$/)}"
+    File.open("data/#{filename}", 'w') { |f| f.write image }
+    image_names.push(filename)
+  end
+
   # Process CL-id'd data
   cltags = npage.css('.cltags')
   address = cltags.css('.mapaddress')
   cl_data = cltags.css('.blurbs li')
   cl_tags_of_interest = { 'purrr' => 'cat_friendly', 'wooof' => 'dog_friendly', 'Location' => 'cl_location' }
   meta = Hash.new
+  meta['images'] = image_names unless image_names.empty?
+  meta['url'] = url
   cl_data.each do |data|
     cl_tags_of_interest.each_key do |key|
       if !data.content.match(key).nil?
