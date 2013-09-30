@@ -6,7 +6,10 @@ require 'fileutils'
 module CLPostParse
   extend self
 
-  def configure
+  # Configures this modules implementation specfic components,
+  # such as telling it how to save images.
+  def configure(file_module)
+    @file_module = file_module
   end
 
   # Grabs all images out of a post and saves them to disk.
