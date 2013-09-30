@@ -24,11 +24,19 @@ module CLPostParse
   end
 
   def get_description(npage)
-    npage.css('#postingbody')[0].content.strip()
+    if npage.css('#postingbody').empty?
+      'No Description Found'
+    else
+      npage.css('#postingbody')[0].content.strip()
+    end
   end
 
   def get_address(npage)
-    npage.css('.cltags .mapaddress')[0].content.split("\n")[0].strip()
+    if npage.css('.cltags .mapaddress').empty?
+      'No Address Found'
+    else
+      npage.css('.cltags .mapaddress')[0].content.split("\n")[0].strip()
+    end
   end
 
   def get_metadata(npage, fields)
