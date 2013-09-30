@@ -2,9 +2,11 @@ require 'rest-client'
 require 'nokogiri'
 require 'fileutils'
 require_relative './lib/cl_post_parse'
+require_relative './lib/grid_fs_save'
 
 url = 'http://saltlakecity.craigslist.org/apa/3990520051.html'
 url = 'http://saltlakecity.craigslist.org/apa/3986668275.html'
+CLPostParse.configure(GridFSInterface)
 if page = RestClient.get(url)
   puts "\nGot #{url} successfully!"
   File.open("data/cl-#{url.match(/[^\/]*$/)}", 'w') { |f| f.write page.body }
