@@ -15,13 +15,17 @@ module CLPostParse
   # Grabs all images out of a post and saves them to disk.
   # Returns a List of file names corresponding to saved images
   def get_images(npage)
+    if npage.nil? then return Array.new end
     image_links = npage.css('#thumbs a')
     image_names = Array.new
     image_links.each do |link|
-      image = RestClient.get(link['href'])
-      filename = "img-#{link['href'].match(/[^\/]*$/)}"
-      save_image(image, filename)
-      image_names.push(filename)
+      begin
+        image = RestClient.get(link['href'])
+        filename = "img-#{link['href'].match(/[^\/]*$/)}"
+        save_image(image, filename)
+        image_names.push(filename)
+      rescue SocketError
+      end
     end
     return image_names
   end
