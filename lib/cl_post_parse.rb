@@ -31,23 +31,44 @@ module CLPostParse
   end
 
   def get_description(npage)
-    if npage.css('#postingbody').empty?
-      'No Description Found'
-    else
-      npage.css('#postingbody')[0].content.strip()
+    begin
+      if npage.css('#postingbody').empty?
+        return nil
+      else
+        npage.css('#postingbody')[0].content.strip()
+      end
+    rescue NoMethodError
     end
   end
 
   def get_address(npage)
-    if npage.css('.cltags .mapaddress').empty?
-      'No Address Found'
-    else
-      npage.css('.cltags .mapaddress')[0].content.split("\n")[0].strip()
+    begin
+      comments = npage.xpath("//comment()")
+      addr = Hash.new
+      comments.each do |comment|
+          if c = comment.content.match(/CLTAG\ (.*)=([a-zA-Z0-9\-_\ #]*)/)
+              case c.captures[0]
+              when 'xstreet0', 'xstreet1'
+                  addr['addr'] = "#{addr['addr']}  #{c.captures[1]}".strip()
+              when 'city'
+                  addr['city'] = c.captures[1].strip()
+              when 'region'
+                  addr['state'] = c.captures[1].strip()
+              when 'GeographicArea'
+                  addr['area'] = c.captures[1].strip()
+              end
+          end
+      end
+      return addr unless addr.empty? 
+      return nil
+    rescue NoMethodError
     end
   end
 
   def get_metadata(npage, fields)
+    if npage.nil? then return nil end
     meta = Hash.new
+    fields.each_value {|v| meta[v] = nil}
     npage.css('.cltags .blurbs li').each do |data|
       fields.each_key do |key|  
         unless data.content.match(key).nil? 
