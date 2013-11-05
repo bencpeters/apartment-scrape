@@ -36,8 +36,13 @@ module GridFSInterface
     @user ||= 'benpeters'
   end
 
+  def user=(user)
+    @user=user
+  end
+
   # Saves data to GridFS using the given file_name
   def save(file_name, data, *meta)
+    if data.nil? then return nil end
     id = grid.put(data, :filename => file_name,
         meta.nil? ? nil : :metadata => meta[0])
   end
