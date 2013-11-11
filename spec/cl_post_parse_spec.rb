@@ -18,155 +18,163 @@ describe CLPostParse do
             CLPostParse.configure(DummyWriter)
         end
 
+        subject { CLPostParse.get_images(page) }
+
         context "with a valid post with images" do
+            let(:page) { @listing }
+
             it "gets all images" do
-                images = CLPostParse.get_images(@listing)
-                images.should have(7).items
-                images.each { |x| expect(x).to match(/^[a-zA-Z0-9_\-]*\.jpg$/) }
+                expect(subject).to have(7).items
+                subject.each { |x| expect(x).to match(/^[a-zA-Z0-9_\-]*\.jpg$/) }
             end
         end
 
         context "with a valid post with images that don't exist" do
-            before :all do
+            let(:page) do
                 path = './spec/resources/cl_post_bad_images.html'
-                @bad_img_listing = Nokogiri::HTML(open(path))
+                Nokogiri::HTML(open(path))
             end
 
             it "returns an empty array" do
-                images = CLPostParse.get_images(@bad_img_listing)
-                images.should be_empty
+                expect(subject).to be_empty
             end
         end
 
         context "with a valid post without images" do
-            before :all do
+            let(:page) do
                 path = './spec/resources/cl_post_no_images.html'
-                @no_img_listing = Nokogiri::HTML(open(path))
+                Nokogiri::HTML(open(path))
             end
 
             it "returns an empty array" do
-                images = CLPostParse.get_images(@no_img_listing)
-                images.should be_empty
+                expect(subject).to be_empty
             end
         end
 
-        context "with an invalid post" do
-            before :all do
+        context "with non CL website" do
+            let(:page) do
                 url = 'http://www.google.com'
-                @google_npage = Nokogiri::HTML(RestClient.get(url))
-                @nil_npage = Nokogiri::HTML(nil)
+                Nokogiri::HTML(RestClient.get(url))
             end
 
-            it "returns an empty array for Google" do
-                images = CLPostParse.get_images(@google_npage)
-                images.should be_empty
+            it "returns an empty array" do
+                expect(subject).to be_empty
             end
-            it "returns an empty array for nil" do
-                images = CLPostParse.get_images(@nil_npage)
-                images.should be_empty
+        end
+
+        context "with a nil page" do
+            let(:page) { Nokogiri::HTML(nil) }
+
+            it "returns an empty array" do
+                expect(subject).to be_empty
             end
         end
 
         context "with a nil post" do
+            let(:page) { nil }
             it "returns an empty array" do
-                images = CLPostParse.get_images(nil)
-                images.should be_empty
+                expect(subject).to be_empty
             end
         end
     end
 
     describe "#get_description" do
+        subject { CLPostParse.get_description(page) }
 
         context "with a valid post" do
+            let(:page) { @listing }
+
             it "gets the description" do
-                desc = CLPostParse.get_description(@listing)
-                expect(desc).to be_a(String)
-                expect(desc.split(/\W/)).to have_at_least(50).words
+                expect(subject).to be_a(String)
+                expect(subject.split(/\W/)).to have_at_least(50).words
             end
         end
 
         context "with a nil post" do
+            let(:page) { nil }
             it "returns nil" do
-                desc = CLPostParse.get_description(nil)
-                expect(desc).to be_nil
+                expect(subject).to be_nil
             end
         end
 
-        context "with an invalid post" do
-            before :all do
+        context "with non CL website" do
+            let(:page) do
                 url = 'http://www.google.com'
-                @google_npage = Nokogiri::HTML(RestClient.get(url))
-                @nil_npage = Nokogiri::HTML(nil)
+                Nokogiri::HTML(RestClient.get(url))
             end
 
-            it "returns nil for Google" do
-                desc = CLPostParse.get_description(@google_npage)
-                expect(desc).to be_nil
+            it "returns nil" do
+                expect(subject).to be_nil
             end
-            it "returns nil for nil" do
-                desc = CLPostParse.get_description(@nil_npage)
-                expect(desc).to be_nil
+        end
+
+        context "with a nil page" do
+            let(:page) { Nokogiri::HTML(nil) }
+
+            it "returns nil" do
+                expect(subject).to be_nil
             end
         end
     end
 
     describe "#get_address" do
+        subject { CLPostParse.get_address(page) }
 
         context "with a valid post with an address" do
+            let(:page) { @listing }
             it "gets the address" do
-                addr = CLPostParse.get_address(@listing)
-                expect(addr).to have_key('addr')
-                expect(addr).to have_key('city')
-                expect(addr).to have_key('state')
-                expect(addr).to include('state' => 'Utah', 'city' => 'Park City')
+                expect(subject).to have_key('addr')
+                expect(subject).to have_key('city')
+                expect(subject).to have_key('state')
+                expect(subject).to include('state' => 'Utah', 'city' => 'Park City')
             end
         end
 
         context "with a valid post with an incomplete address" do
-            before :all do
+            let(:page) do
                 path = './spec/resources/cl_post_incomplete_addr.html'
-                @incomplete_addr = Nokogiri::HTML(open(path))
+                Nokogiri::HTML(open(path))
             end
 
             it "has incomplete details" do
-                addr = CLPostParse.get_address(@incomplete_addr)
-                expect(addr).to include('area')
+                expect(subject).to include('area')
             end
         end
 
         context "with a valid post without an address" do
-            before :all do
+            let(:page) do
                 path = './spec/resources/cl_post_no_images.html'
-                @no_addr_listing = Nokogiri::HTML(open(path))
+                Nokogiri::HTML(open(path))
             end
 
             it "returns nil" do
-                addr = CLPostParse.get_address(@no_addr_listing)
-                expect(addr).to be_nil
+                expect(subject).to be_nil
             end
         end
 
         context "with a nil post" do
+            let(:page) { nil }
             it "returns nil" do
-                addr = CLPostParse.get_address(nil)
-                expect(addr).to be_nil
+                expect(subject).to be_nil
             end
         end
 
-        context "with an invalid post" do
-            before :all do
+        context "with non CL website" do
+            let(:page) do
                 url = 'http://www.google.com'
-                @google_npage = Nokogiri::HTML(RestClient.get(url))
-                @nil_npage = Nokogiri::HTML(nil)
+                Nokogiri::HTML(RestClient.get(url))
             end
 
-            it "returns nil for Google" do
-                addr = CLPostParse.get_address(@google_npage)
-                expect(addr).to be_nil
+            it "returns nil" do
+                expect(subject).to be_nil
             end
-            it "returns nil for nil" do
-                addr = CLPostParse.get_address(@nil_npage)
-                expect(addr).to be_nil
+        end
+
+        context "with a nil page" do
+            let(:page) { Nokogiri::HTML(nil) }
+
+            it "returns nil" do
+                expect(subject).to be_nil
             end
         end
     end
@@ -179,67 +187,73 @@ describe CLPostParse do
                             'Updated'=> 'updated_date' }
             @invalid_tags = {'lbkjdafd'=> 'my_terrible_tag', '12312' => 'not_cool'}
         end
+        subject { CLPostParse.get_metadata(page, tags) }
+        let(:tags) { @valid_tags }
 
         context "with a valid post" do
+            let(:page) { @listing }
+
             it "gets the tags" do
-                meta_data = CLPostParse.get_metadata(@listing, @valid_tags)
                 @valid_tags.each_value do |v|
-                    expect(meta_data).to include(v)
+                    expect(subject).to include(v)
                 end
             end
 
-            it "doesn't find invalid tags" do
-                meta_data = CLPostParse.get_metadata(@listing, @invalid_tags)
-                @invalid_tags.each_value {|v| expect(meta_data).to include(v)}
-                meta_data.each_value {|v| expect(v).to be_nil }
+            context "and invalid tags" do
+                let(:tags) { @invalid_tags }
+
+                it "doesn't find invalid tags" do
+                    @invalid_tags.each_value {|v| expect(subject).to include(v)}
+                    subject.each_value {|v| expect(v).to be_nil }
+                end
             end
         end
 
         context "with a valid post without any tags" do
-            before :all do
+            let(:page) do
                 path = './spec/resources/cl_post_no_images.html'
-                @no_addr_listing = Nokogiri::HTML(open(path))
+                Nokogiri::HTML(open(path))
             end
 
             it "should have CL meta data" do
-                meta_data = CLPostParse.get_metadata(@no_addr_listing, \
-                                                     @valid_tags)
-                expect(meta_data).to include('cl_id'=> '4001852052', \
+                expect(subject).to include('cl_id'=> '4001852052', \
                      'post_date'=> '2013-08-14,  1:10PM MDT', \
                      'updated_date'=> '2013-10-21, 12:30PM MDT'
                 )
                 ['dog_friendly', 'cat_friendly', 'cl_location'].each do |k|
-                    expect(meta_data[k]).to be_nil
+                    expect(subject[k]).to be_nil
                 end
             end
         end
 
         context "with a nil post" do
-            it "returns nil" do
-                meta_data = CLPostParse.get_metadata(nil, @valid_tags)
-                expect(meta_data).to be_nil
+            let(:page) { nil }
+             it "returns nil" do
+                expect(subject).to be_nil
             end
         end
 
-        context "with an invalid post" do
-            before :all do
+        context "with non CL website" do
+            let(:page) do
                 url = 'http://www.google.com'
-                @google_npage = Nokogiri::HTML(RestClient.get(url))
-                @nil_npage = Nokogiri::HTML(nil)
+                Nokogiri::HTML(RestClient.get(url))
             end
 
             it "doesn't find the tags" do
-                meta_data = CLPostParse.get_metadata(@google_npage, @valid_tags)
                 @valid_tags.each_value do |v| 
-                    expect(meta_data).to include(v)
-                    expect(meta_data[v]).to be_nil
+                    expect(subject).to include(v)
+                    expect(subject[v]).to be_nil
                 end
             end
+        end
+
+        context "with a nil page" do
+            let(:page) { Nokogiri::HTML(nil) }
+
             it "doesn't find the tags" do
-                meta_data = CLPostParse.get_metadata(@nil_npage, @valid_tags)
                 @valid_tags.each_value do |v| 
-                    expect(meta_data).to include(v)
-                    expect(meta_data[v]).to be_nil
+                    expect(subject).to include(v)
+                    expect(subject[v]).to be_nil
                 end
             end
         end
