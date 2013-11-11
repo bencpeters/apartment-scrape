@@ -49,6 +49,21 @@ describe GridFSInterface do
         end
     end
 
+    describe "#grid" do
+        subject(:image) { GridFSInterface.grid.get(id) }
+
+        context "accessing a previously saved image" do
+            let(:id) { @grid_handle.put(File.read( \
+                './spec/resources/sample-img.jpg' ), :filename => 'my_file') }
+
+            it "should be able to get the image" do
+                expect(image).to be_a(Mongo::GridIO)
+                expect(image.file_length).to be > 0
+                expect(image.filename).to eq('my_file')
+            end
+        end
+    end
+
     after :all do
         @mongo.drop_database('grid_fs_save_test')
     end
