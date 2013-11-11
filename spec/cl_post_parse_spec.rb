@@ -258,4 +258,51 @@ describe CLPostParse do
             end
         end
     end
+
+    describe "#parse_page" do
+        subject { CLPostParse.parse_page(page, url) }
+        let (:url) { 'http://saltlakecity.craigslist.org/apa/3986668275.html' }
+        context "with a valid post" do
+            let(:page) { @listing }
+
+            it "Parses the page correctly" do
+                expect(subject).to be_a(Hash)
+                expect(subject).to have_key('images')
+                expect(subject['images']).to be_a(Array)
+                expect(subject).to have_key('address')
+                expect(subject).to have_key('description')
+                expect(subject).to have_key('url')
+                expect(subject).to have_key('updated')
+                expect(subject).to have_key('retrieved')
+                expect(subject).to have_key('metadata')
+                expect(subject['metadata']).to be_a(Hash)
+            end
+        end
+
+        context "with a nil post" do
+            let(:page) { nil }
+            it "returns nil" do
+                expect(subject).to be_nil
+            end
+        end
+
+        context "with non CL website" do
+            let(:page) do
+                url = 'http://www.google.com'
+                Nokogiri::HTML(RestClient.get(url))
+            end
+
+            it "returns nil" do
+                expect(subject).to be_nil
+            end
+        end
+
+        context "with a nil page" do
+            let(:page) { Nokogiri::HTML(nil) }
+
+            it "returns nil" do
+                expect(subject).to be_nil
+            end
+        end
+    end
 end

@@ -12,6 +12,12 @@ module CLPostParse
     @file_module = file_module
   end
 
+  def tags
+    @tags || { 'purrr' => 'cat_friendly', 'wooof' => 'dog_friendly', \
+               'Location' => 'cl_location', 'Posting ID' => 'cl_id', \
+               'Posted' => 'post_date', 'Updated' => 'updated_date' }
+  end
+
   # Grabs all images out of a post and saves them to disk.
   # Returns a List of file names corresponding to saved images
   def get_images(npage)
@@ -88,6 +94,26 @@ module CLPostParse
       end
     end
     meta
+  end
+
+  def parse_page(npage, url)
+    # Parse a Nokogiri page and returns a nested HashMap object ready to
+    # write to the DB
+    if npage.nil? then return nil end
+
+    record = Hash.new
+    record['images'] = get_images(npage)
+    record['description'] = get_description(npage)
+    record['address'] = get_address(npage)
+    record['metadata'] = get_metadata(npage, tags)
+    if tags.has_value?('updated_date')
+      record['updated'] = record['metadata']['updated_date']
+    end
+    record['retrieved'] = DateTime.now
+    record['url'] = url
+
+    if record['description'].nil? then return nil end
+    return record
   end
   
   private
