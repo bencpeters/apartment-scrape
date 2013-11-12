@@ -47,4 +47,9 @@ module AWSS3Interface
         AWS::S3::S3Object.store(file_name, data, bucket)
         file_name
     end
+
+    def delete(file_name)
+        initialize
+        AWS::S3::S3Object.delete(name, bucket)
+    end
 end

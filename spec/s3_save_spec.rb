@@ -57,4 +57,38 @@ describe AWSS3Interface do
             end
         end
     end
+    
+    describe "#delete" do
+        before :each do 
+            data = File.read('./spec/resources/sample-img.jpg') 
+            AWS::S3::S3Object.store('file-name.jpg', data, @bucket_name)
+        end
+        
+        subject { AWSS3Interface.delete(file) }
+
+        context "with a file that exists" do
+            let (:file) { 'file-name.jpg' }
+
+            it "should delete the file" do
+                expect { AWS::S3::S3Object.find('file=-name.jpg', @bucket_name) } \
+                    .to raise_error AWS::S3::NoSuchKey
+            end
+        end
+
+        context "with a file that doesn't exist" do
+            let (:file) { 'made-up-name.jpg' }
+            it "should return quietly" do
+                expect(AWS::S3::S3Object.find('file-name.jpg', @bucket_name)) \
+                    .to be_a(AWS::S3::S3Object)
+            end
+        end
+
+        context "with a nil file name" do
+            let (:file) { nil }
+            it "should not do anything" do
+                expect(AWS::S3::S3Object.find('file-name.jpg', @bucket_name)) \
+                    .to be_a(AWS::S3::S3Object)
+            end
+        end
+    end
 end
